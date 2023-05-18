@@ -100,12 +100,13 @@ func TestPlayMoveSavedgame(t *testing.T) {
 	game1, found := keeper.GetStoredGame(ctx, "1")
 	require.True(t, found)
 	require.EqualValues(t, types.StoredGame{
-		Index:  "1",
-		Board:  "*b*b*b*b|b*b*b*b*|***b*b*b|**b*****|********|r*r*r*r*|*r*r*r*r|r*r*r*r*",
-		Turn:   "r",
-		Black:  bob,
-		Red:    carol,
-		Winner: "*",
+		Index:    "1",
+		Board:    "*b*b*b*b|b*b*b*b*|***b*b*b|**b*****|********|r*r*r*r*|*r*r*r*r|r*r*r*r*",
+		Turn:     "r",
+		Black:    bob,
+		Red:      carol,
+		Winner:   "*",
+		Deadline: types.FormatDeadline(ctx.BlockTime().Add(types.MaxTurnDuration)),
 	}, game1)
 }
 
@@ -225,12 +226,13 @@ func TestPlayMove2SavedGame(t *testing.T) {
 	game1, found := keeper.GetStoredGame(ctx, "1")
 	require.True(t, found)
 	require.EqualValues(t, types.StoredGame{
-		Index:  "1",
-		Board:  "*b*b*b*b|b*b*b*b*|***b*b*b|**b*****|*r******|**r*r*r*|*r*r*r*r|r*r*r*r*",
-		Turn:   "b",
-		Black:  bob,
-		Red:    carol,
-		Winner: "*",
+		Index:    "1",
+		Board:    "*b*b*b*b|b*b*b*b*|***b*b*b|**b*****|*r******|**r*r*r*|*r*r*r*r|r*r*r*r*",
+		Turn:     "b",
+		Black:    bob,
+		Red:      carol,
+		Winner:   "*",
+		Deadline: types.FormatDeadline(ctx.BlockTime().Add(types.MaxTurnDuration)),
 	}, game1)
 }
 
@@ -303,12 +305,13 @@ func TestPlayMove3SavedGame(t *testing.T) {
 	game1, found := keeper.GetStoredGame(ctx, "1")
 	require.True(t, found)
 	require.EqualValues(t, types.StoredGame{
-		Index:  "1",
-		Board:  "*b*b*b*b|b*b*b*b*|***b*b*b|********|********|b*r*r*r*|*r*r*r*r|r*r*r*r*",
-		Turn:   "r",
-		Black:  bob,
-		Red:    carol,
-		Winner: "*",
+		Index:    "1",
+		Board:    "*b*b*b*b|b*b*b*b*|***b*b*b|********|********|b*r*r*r*|*r*r*r*r|r*r*r*r*",
+		Turn:     "r",
+		Black:    bob,
+		Red:      carol,
+		Winner:   "*",
+		Deadline: types.FormatDeadline(ctx.BlockTime().Add(types.MaxTurnDuration)),
 	}, game1)
 }
 
@@ -372,4 +375,22 @@ func TestPlayMove2Emitted(t *testing.T) {
 		{Key: "winner", Value: "*"},
 		{Key: "board", Value: "*b*b*b*b|b*b*b*b*|***b*b*b|**b*****|*r******|**r*r*r*|*r*r*r*r|r*r*r*r*"},
 	}, event.Attributes[6:])
+}
+
+func TestSavedPlayedDeadlineIsParseable(t *testing.T) {
+	msgServer, keeper, context := setupMsgServerWithOneGameForPlayMove(t)
+	ctx := sdk.UnwrapSDKContext(context)
+	require.NotNil(t, ctx)
+	msgServer.PlayMove(context, &types.MsgPlayMove{
+		Creator:   bob,
+		GameIndex: "1",
+		FromX:     1,
+		FromY:     2,
+		ToX:       2,
+		ToY:       3,
+	})
+	game, found := keeper.GetStoredGame(ctx, "1")
+	require.True(t, found)
+	_, err := game.GetDeadlineAsTime()
+	require.Nil(t, err)
 }
