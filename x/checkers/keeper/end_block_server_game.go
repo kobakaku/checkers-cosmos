@@ -42,15 +42,18 @@ func (k Keeper) ForfeitExpiredGames(goCtx context.Context) {
 			k.RemoveFromFifo(ctx, &storedGame, &systemInfo)
 			lastBoard := storedGame.Board
 
-			// プレイヤーが動かしていない動かしていない場合
+			// プレイヤーが２回以上動かしていない場合
 			if storedGame.MoveCount <= 1 {
 				k.RemoveStoredGame(ctx, gameIndex)
-
+				if storedGame.MoveCount == 1 {
+					k.MustRefundWager(ctx, &storedGame)
+				}
 			} else {
 				storedGame.Winner, found = opponents[storedGame.Turn]
 				if !found {
 					panic(fmt.Sprintf(types.ErrCannotFindWinnerByColor.Error(), storedGame.Turn))
 				}
+				k.MustPayWinnings(ctx, &storedGame)
 				storedGame.Board = ""
 				k.SetStoredGame(ctx, storedGame)
 			}
