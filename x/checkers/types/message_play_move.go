@@ -60,11 +60,11 @@ func (msg *MsgPlayMove) ValidateBasic() error {
 
 	boardChecks := []struct {
 		value uint64
-		err string
+		err   string
 	}{
 		{
 			value: msg.FromX,
-			err: "fromX out of range (%d)",
+			err:   "fromX out of range (%d)",
 		},
 		{
 			value: msg.ToX,
