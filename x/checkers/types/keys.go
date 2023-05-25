@@ -57,6 +57,7 @@ const (
 	GameForfeitedEventGameIndex = "game-index"
 	GameForfeitedEventWinner    = "winner"
 	GameForfeitedEventBoard     = "board"
+	GameCreatedEventDenom       = "denom"
 )
 
 const (
